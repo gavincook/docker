@@ -1,0 +1,59 @@
+#!/bin/bash
+DB_USER=${DB_USER:-admin}
+DB_PWD=${DB_PWD:-pwd123456}
+DATADIR="/var/lib/mysql"
+get_option () {
+	local section=$1
+	local option=$2
+	local default=$3
+	# my_print_defaults can output duplicates, if an option exists both globally and in
+	# a custom config file. We pick the last occurence, which is from the custom config.
+	ret=$(my_print_defaults $section | grep '^--'${option}'=' | cut -d= -f2- | tail -n1)
+	[ -z $ret ] && ret=$default
+	echo $ret
+}
+
+SOCKET=$(get_option  mysqld socket "$DATADIR/mysql.sock")
+PIDFILE=$(get_option mysqld pid-file "/var/run/mysqld/mysqld.pid")
+
+if [ -e /scripts/firstrun ]; then 
+        echo "First run." 
+	echo 'Running mysql_install_db'
+        # init mysql db ,like the'mysql' which contains the privileges data
+	if [ ! -f /usr/share/mysql/my-default.cnf ]; then
+        	cp /etc/mysql/my.cnf /usr/share/mysql/my-default.cnf
+    	fi 
+	mysql_install_db --user=mysql
+        echo 'Finished mysql_install_db'
+	mysqld --user=mysql  --skip-networking &
+	for i in $(seq 30 -1 0); do
+		[ -S "${SOCKET}" ] && break
+		echo 'MySQL init process in progress...'
+		sleep 1
+	done
+	echo 'Setting the profile for mysql...'
+	mysql -e "delete from mysql.user;"
+	mysql -e "grant all privileges on *.* to '${DB_USER}'@'%' identified by '${DB_PWD}';"
+	mysql -e "grant all privileges on *.* to '${DB_USER}'@'localhost' identified by '${DB_PWD}';"
+        mysql -e "grant all privileges on *.* to '${DB_USER}'@'127.0.0.1' identified by '${DB_PWD}';"
+	mysql -e "flush privileges;"
+	echo "DB_USER="$DB_USER
+	echo $DB_PWD
+	rm /scripts/firstrun 
+	# close the mysql server
+	echo $(cat $PIDFILE)
+	kill $(cat $PIDFILE)
+	for i in $(seq 30 -1 0); do
+		[ -f "$PIDFILE" ] || break
+		echo 'MySQL init process in progress...'
+		sleep 1
+	done
+	echo 'MySQL init done.'
+else
+	echo "MySQL is starting..."
+	if [ -e ${SOCKET} ]; then
+		rm -f ${SOCKET}
+	fi
+fi
+
+exec /usr/bin/mysqld_safe
