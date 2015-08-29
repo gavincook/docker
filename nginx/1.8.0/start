@@ -1,0 +1,9 @@
+#!/bin/bash
+# simple logic, check there has nginx.conf, copy from the backup folder if not exist. cause there allow mapping the conf folder to the host, if the host mapping folder is empty, it will make the nginx conf folder empty also. so there need to check for this, ensure the nginx.conf is there.
+if [ ! -e /usr/local/program/nginx/conf/nginx.conf ]; then
+  cp -r /usr/local/program/nginx/conf-backup/* /usr/local/program/nginx/conf
+  cp /nginx.conf /usr/local/program/nginx/conf/nginx.conf
+fi
+
+exec /usr/local/program/nginx/sbin/nginx -g "daemon off;"
+

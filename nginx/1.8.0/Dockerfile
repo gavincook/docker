@@ -8,7 +8,9 @@ RUN sed -i "s/archive\.ubuntu\.com/mirrors\.163\.com/g" /etc/apt/sources.list &&
 
 COPY nginx-1.8.0.tar.gz nginx-1.8.0.tar.gz
 COPY nginx.conf nginx.conf
+COPY start start
 
+RUN chmod +x start
 # Install nginx 1.8.0
 # first install the dependency ones for nginx
 RUN \
@@ -18,12 +20,12 @@ RUN \
   cd nginx-1.8.0 && \
   ./configure --prefix=/usr/local/program/nginx && \
   make && \
-  make install && \
-  mv nginx.conf /usr/local/program/nginx/conf/nginx.conf
+  make install &&\
+  cp -r /usr/local/program/nginx/conf /usr/local/program/nginx/conf-backup
  
 
 EXPOSE 80 443
 
-VOLUME ["/usr/local/program/nginx/html"]
+VOLUME ["/usr/local/program/nginx/html","/user/local/program/nginx/conf","/usr/local/program/nginx/logs"]
 
-CMD ["./usr/local/program/nginx/sbin/nginx","-g","daemon off;"]
+CMD ["/start"]
