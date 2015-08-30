@@ -21,7 +21,6 @@ RUN \
 
 VOLUME ["/usr/local/program/tomcat/logs"]
 
-EXPOSE 8080
+EXPOSE 8080 443
 
 CMD ["/scripts/start"]
-
