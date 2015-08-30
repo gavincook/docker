@@ -1,7 +1,7 @@
 ### Nginx 1.8.0 in docker
 
 Nginx 1.8.0 will installed under `/usr/local/program/nginx` folder. It use the `nginx.conf` as config file, users can replace it with theirs' own config file when build the Nginx image.
-It export port `80` to host pc. 
+It export port `80` and `443` to host pc. 
 
 * build command: `docker build -t nginx:1.8.0 .`
 
