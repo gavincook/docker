@@ -1,26 +1,27 @@
-FROM jdk:1.8.0_45
+FROM jdk:1.8
 
 
 # Last modified at 2015-07-06
 MAINTAINER gavincook <swbyzx@gmail.com>
 
-# Set the ubuntu mirror to the 163 for faster speed
+ENV CATALINA_HOME /usr/local/program/tomcat
 
-RUN sed -i "s/archive\.ubuntu\.com/mirrors\.163\.com/g" /etc/apt/sources.list && \
-  apt-get update
+COPY scripts /scripts
 
-
-# Install tomcat8
+RUN chmod +x /scripts/start
 
 RUN \
   DEBIAN_FRONTEND=noninteractive apt-get install -y wget && \
-  wget http://mirrors.hust.edu.cn/apache/tomcat/tomcat-8/v8.0.23/bin/apache-tomcat-8.0.23.tar.gz && \
+  wget http://apache.fayea.com/tomcat/tomcat-8/v8.0.26/bin/apache-tomcat-8.0.26.tar.gz && \
   tar -xvf apache-tomcat*.tar.gz &&\
   rm apache-tomcat*.tar.gz && \
   mkdir -p /usr/local/program && \
-  mv apache-tomcat* /usr/local/program/tomcat/
+  mv apache-tomcat* /usr/local/program/tomcat 
+  
+
+VOLUME ["/usr/local/program/tomcat/logs"]
 
 EXPOSE 8080
 
-CMD ["./usr/local/program/tomcat/bin/catalina.sh","run"]
+CMD ["/scripts/start"]
 
