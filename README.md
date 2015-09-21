@@ -4,6 +4,8 @@ Some useful docker images, now contains:
 * nginx
 * tomcat
 * jenkins
+* php-fpm
+
 
 ...
 
